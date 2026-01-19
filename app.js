@@ -1,4 +1,5 @@
 // Application Logic
+let currentSubject = 'oops'; // 'oops' or 'linux'
 let currentTopicIndex = 0;
 let currentQuestionIndex = 0;
 let quizScore = 0;
@@ -6,6 +7,7 @@ let correctAnswers = 0;
 let quizQuestions = [];
 let selectedAnswer = null;
 let quizStarted = false;
+let currentQuizType = 'oops'; // 'oops' or 'linux'
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
@@ -14,12 +16,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initializeApp() {
     // Check if data is loaded
-    if (typeof oopsData === 'undefined') {
-        console.error('oopsData is not defined. Make sure data.js is loaded before app.js');
+    if (typeof appData === 'undefined') {
+        console.error('appData is not defined. Make sure data.js is loaded before app.js');
         return;
     }
     
     setupThemeToggle();
+    setupSidebarToggle();
+    setupTabSwitching();
     setupModeSwitching();
     setupReadingMode();
     setupQuizMode();
@@ -58,6 +62,41 @@ function updateThemeIcon(theme, iconElement) {
     }
 }
 
+// Sidebar Toggle
+function setupSidebarToggle() {
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+    }
+}
+
+// Tab Switching (OOP vs Linux)
+function setupTabSwitching() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tab = this.getAttribute('data-tab');
+            
+            // Update active tab
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Update current subject
+            currentSubject = tab;
+            currentTopicIndex = 0;
+            
+            // Reload topics
+            loadTopic(0);
+            updateTopicList();
+        });
+    });
+}
+
 // Mode Switching
 function setupModeSwitching() {
     const modeButtons = document.querySelectorAll('.mode-btn');
@@ -72,12 +111,25 @@ function setupModeSwitching() {
             this.classList.add('active');
             
             // Update content
-            modeContents.forEach(content => content.classList.remove('active'));
-            document.getElementById(`${mode}-mode`).classList.add('active');
+            modeContents.forEach(content => {
+                content.classList.remove('active');
+                content.style.display = ''; // Reset display style
+            });
+            
+            const targetMode = document.getElementById(`${mode}-mode`);
+            if (targetMode) {
+                targetMode.classList.add('active');
+                targetMode.style.display = 'block';
+            }
             
             // Initialize quiz mode if switching to it
             if (mode === 'quiz' && !quizStarted) {
                 resetQuizDisplay();
+            }
+            
+            // Ensure reading mode is properly displayed if switching to it
+            if (mode === 'read') {
+                ensureReadingModeVisible();
             }
         });
     });
@@ -105,6 +157,7 @@ function resetQuizDisplay() {
 // Reading Mode Functions
 function setupReadingMode() {
     document.getElementById('prev-topic').addEventListener('click', () => {
+        const currentData = appData[currentSubject];
         if (currentTopicIndex > 0) {
             currentTopicIndex--;
             loadTopic(currentTopicIndex);
@@ -112,7 +165,8 @@ function setupReadingMode() {
     });
 
     document.getElementById('next-topic').addEventListener('click', () => {
-        if (currentTopicIndex < oopsData.topics.length - 1) {
+        const currentData = appData[currentSubject];
+        if (currentData && currentTopicIndex < currentData.topics.length - 1) {
             currentTopicIndex++;
             loadTopic(currentTopicIndex);
         }
@@ -120,19 +174,20 @@ function setupReadingMode() {
 }
 
 function loadTopic(index) {
-    if (index < 0 || index >= oopsData.topics.length) return;
+    const currentData = appData[currentSubject];
+    if (!currentData || index < 0 || index >= currentData.topics.length) return;
     
     currentTopicIndex = index;
-    const topic = oopsData.topics[index];
+    const topic = currentData.topics[index];
     
     document.getElementById('topic-title').textContent = topic.title;
     document.getElementById('topic-content').innerHTML = formatContent(topic.content);
     document.getElementById('current-topic-num').textContent = index + 1;
-    document.getElementById('total-topics').textContent = oopsData.topics.length;
+    document.getElementById('total-topics').textContent = currentData.topics.length;
     
     // Update navigation buttons
     document.getElementById('prev-topic').disabled = index === 0;
-    document.getElementById('next-topic').disabled = index === oopsData.topics.length - 1;
+    document.getElementById('next-topic').disabled = index === currentData.topics.length - 1;
     
     // Update topic list
     updateTopicList();
@@ -165,7 +220,10 @@ function updateTopicList() {
     const topicList = document.getElementById('topic-list');
     topicList.innerHTML = '';
     
-    oopsData.topics.forEach((topic, index) => {
+    const currentData = appData[currentSubject];
+    if (!currentData) return;
+    
+    currentData.topics.forEach((topic, index) => {
         const topicItem = document.createElement('div');
         topicItem.className = 'topic-item';
         if (index === currentTopicIndex) {
@@ -181,14 +239,33 @@ function updateTopicList() {
 
 // Quiz Mode Functions
 function setupQuizMode() {
+    // Quiz type selector
+    const quizTypeButtons = document.querySelectorAll('.quiz-type-btn');
+    quizTypeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const quizType = this.getAttribute('data-quiz-type');
+            quizTypeButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            currentQuizType = quizType;
+        });
+    });
+    
     document.getElementById('start-quiz-btn').addEventListener('click', startQuiz);
     document.getElementById('next-question-btn').addEventListener('click', nextQuestion);
     document.getElementById('restart-quiz-btn').addEventListener('click', restartQuiz);
+    
+    // Stop quiz button - will be created dynamically
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'stop-quiz-btn') {
+            stopQuiz();
+        }
+    });
 }
 
 function startQuiz() {
-    // Check if questions are available
-    if (!oopsData || !oopsData.questions || oopsData.questions.length === 0) {
+    // Get questions based on selected quiz type
+    const quizData = appData[currentQuizType];
+    if (!quizData || !quizData.questions || quizData.questions.length === 0) {
         alert('No questions available. Please check the data file.');
         return;
     }
@@ -203,7 +280,7 @@ function startQuiz() {
     const uniqueQuestions = [];
     const seenQuestions = new Set();
     
-    for (const question of oopsData.questions) {
+    for (const question of quizData.questions) {
         const questionKey = question.question.toLowerCase().trim();
         if (!seenQuestions.has(questionKey)) {
             seenQuestions.add(questionKey);
@@ -223,9 +300,18 @@ function startQuiz() {
     const quizCard = document.getElementById('quiz-card');
     quizCard.style.display = 'block';
     
+    // Show stop quiz button
+    const stopQuizBtn = document.getElementById('stop-quiz-btn');
+    if (stopQuizBtn) {
+        stopQuizBtn.style.display = 'block';
+    }
+    
     // Make sure quiz card has the right structure
     if (!document.getElementById('quiz-question')) {
         quizCard.innerHTML = `
+            <div class="quiz-top-controls">
+                <button id="stop-quiz-btn" class="quiz-btn stop-btn">⏹️ Stop Quiz</button>
+            </div>
             <div id="quiz-question" class="quiz-question"></div>
             <div id="quiz-options" class="quiz-options"></div>
             <div id="quiz-feedback" class="quiz-feedback"></div>
@@ -237,9 +323,16 @@ function startQuiz() {
         // Re-attach event listeners
         document.getElementById('next-question-btn').addEventListener('click', nextQuestion);
         document.getElementById('restart-quiz-btn').addEventListener('click', restartQuiz);
+        document.getElementById('stop-quiz-btn').addEventListener('click', stopQuiz);
     }
     
     loadQuestion();
+}
+
+function stopQuiz() {
+    if (confirm('Are you sure you want to stop the quiz? Your progress will be lost.')) {
+        restartQuiz();
+    }
 }
 
 function loadQuestion() {
@@ -296,6 +389,12 @@ function loadQuestion() {
     const restartBtn = document.getElementById('restart-quiz-btn');
     if (nextBtn) nextBtn.style.display = 'none';
     if (restartBtn) restartBtn.style.display = 'none';
+    
+    // Ensure stop quiz button is visible
+    const stopQuizBtn = document.getElementById('stop-quiz-btn');
+    if (stopQuizBtn && quizStarted) {
+        stopQuizBtn.style.display = 'block';
+    }
 }
 
 function selectAnswer(index) {
@@ -313,10 +412,10 @@ function selectAnswer(index) {
     // Mark selected answer
     options[index].classList.add('selected');
     
-    // Check if correct
+    // Check if correct (2 points per item)
     if (index === question.correctAnswer) {
         options[index].classList.add('correct');
-        quizScore += 10;
+        quizScore += 2;
         correctAnswers++;
         feedback.className = 'quiz-feedback correct show';
         feedback.innerHTML = `<strong>✓ Correct!</strong>${showExplanations && question.explanation ? '<br>' + question.explanation : ''}`;
@@ -345,14 +444,24 @@ function nextQuestion() {
 }
 
 function showQuizResults() {
-    const percentage = Math.round((correctAnswers / quizQuestions.length) * 100);
+    const totalPossibleScore = quizQuestions.length * 2; // 2 points per question
+    const percentage = Math.round((quizScore / totalPossibleScore) * 100);
     const quizCard = document.querySelector('.quiz-card');
     
+    // Hide stop quiz button when quiz is complete
+    const stopQuizBtn = document.getElementById('stop-quiz-btn');
+    if (stopQuizBtn) {
+        stopQuizBtn.style.display = 'none';
+    }
+    
     quizCard.innerHTML = `
+        <div class="quiz-top-controls">
+            <button id="stop-quiz-btn" class="quiz-btn stop-btn" style="display: none;">⏹️ Stop Quiz</button>
+        </div>
         <div style="text-align: center; padding: 40px;">
             <h2 style="color: var(--primary-purple); margin-bottom: 20px; font-size: 2.5em;">Quiz Complete! 🎉</h2>
             <div style="font-size: 1.5em; margin-bottom: 30px;">
-                <p style="margin-bottom: 15px;"><strong>Score:</strong> <span style="color: var(--primary-purple);">${quizScore}</span></p>
+                <p style="margin-bottom: 15px;"><strong>Score:</strong> <span style="color: var(--primary-purple);">${quizScore}</span> / ${totalPossibleScore}</p>
                 <p style="margin-bottom: 15px;"><strong>Correct Answers:</strong> <span style="color: var(--complementary-teal);">${correctAnswers}</span> / ${quizQuestions.length}</p>
                 <p style="margin-bottom: 15px;"><strong>Percentage:</strong> <span style="color: var(--complementary-gold);">${percentage}%</span></p>
             </div>
@@ -382,6 +491,9 @@ function restartQuiz() {
         quizCard.style.display = 'none';
         // Reset quiz card content to initial state
         quizCard.innerHTML = `
+            <div class="quiz-top-controls">
+                <button id="stop-quiz-btn" class="quiz-btn stop-btn" style="display: none;">⏹️ Stop Quiz</button>
+            </div>
             <div id="quiz-question" class="quiz-question">
                 <p>Click "Start Quiz" to begin!</p>
             </div>
@@ -395,6 +507,16 @@ function restartQuiz() {
         // Re-attach event listeners
         document.getElementById('next-question-btn').addEventListener('click', nextQuestion);
         document.getElementById('restart-quiz-btn').addEventListener('click', restartQuiz);
+        const stopBtn = document.getElementById('stop-quiz-btn');
+        if (stopBtn) {
+            stopBtn.addEventListener('click', stopQuiz);
+        }
+    }
+    
+    // Hide stop quiz button
+    const stopQuizBtn = document.getElementById('stop-quiz-btn');
+    if (stopQuizBtn) {
+        stopQuizBtn.style.display = 'none';
     }
     
     // Reset stats
@@ -402,6 +524,38 @@ function restartQuiz() {
     document.getElementById('question-number').textContent = '1';
     document.getElementById('total-questions').textContent = '0';
     document.getElementById('correct-count').textContent = '0';
+    
+    // Ensure reading mode is visible if user switches to it
+    ensureReadingModeVisible();
+}
+
+function ensureReadingModeVisible() {
+    // Make sure reading mode content is visible
+    const readingMode = document.getElementById('reading-mode');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (readingMode) {
+        // Ensure reading mode has active class and is visible
+        readingMode.classList.add('active');
+        readingMode.style.display = 'block';
+    }
+    
+    if (sidebar) {
+        // Ensure sidebar is visible (not collapsed)
+        sidebar.classList.remove('collapsed');
+        sidebar.style.display = '';
+    }
+    
+    // Reload current topic to ensure content is displayed
+    const currentData = appData[currentSubject];
+    if (currentData && currentData.topics.length > 0) {
+        // Make sure we have a valid topic index
+        if (currentTopicIndex >= currentData.topics.length) {
+            currentTopicIndex = 0;
+        }
+        loadTopic(currentTopicIndex);
+        updateTopicList();
+    }
 }
 
 function shuffleArray(array) {

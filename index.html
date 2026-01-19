@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OOPs Review App</title>
+    <title>Majors Reviewer Prelims</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,8 +11,8 @@
         <header>
             <div class="header-content">
                 <div class="header-text">
-                    <h1>🎓 OOPs Review App</h1>
-                    <p class="subtitle">Master Object-Oriented Programming Concepts</p>
+                    <h1>🎓 Majors Reviewer Prelims</h1>
+                    <p class="subtitle">Review OOP and Linux Concepts</p>
                 </div>
                 <button id="theme-toggle" class="theme-toggle" title="Toggle Dark/Light Mode">
                     <span id="theme-icon">🌙</span>
@@ -27,24 +27,37 @@
 
         <!-- Reading Mode -->
         <div id="reading-mode" class="mode-content active">
-            <div class="content-controls">
-                <button class="nav-btn" id="prev-topic">← Previous</button>
-                <span class="topic-counter">
-                    <span id="current-topic-num">1</span> / <span id="total-topics">0</span>
-                </span>
-                <button class="nav-btn" id="next-topic">Next →</button>
-            </div>
-            
-            <div class="topic-card">
-                <h2 id="topic-title">Loading...</h2>
-                <div id="topic-content" class="topic-content">
-                    <p>Content will be loaded here...</p>
-                </div>
-            </div>
+            <div class="reading-layout">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <div class="sidebar-header">
+                        <h3>📚 Topics</h3>
+                        <button id="sidebar-toggle" class="sidebar-toggle" title="Toggle Sidebar">☰</button>
+                    </div>
+                    <div class="sidebar-tabs">
+                        <button class="tab-btn active" data-tab="oops">OOP</button>
+                        <button class="tab-btn" data-tab="linux">Linux</button>
+                    </div>
+                    <div id="topic-list" class="topic-list"></div>
+                </aside>
 
-            <div class="topic-list-container">
-                <h3>📚 Topics</h3>
-                <div id="topic-list" class="topic-list"></div>
+                <!-- Main Content -->
+                <main class="main-content">
+                    <div class="content-controls">
+                        <button class="nav-btn" id="prev-topic">← Previous</button>
+                        <span class="topic-counter">
+                            <span id="current-topic-num">1</span> / <span id="total-topics">0</span>
+                        </span>
+                        <button class="nav-btn" id="next-topic">Next →</button>
+                    </div>
+                    
+                    <div class="topic-card">
+                        <h2 id="topic-title">Loading...</h2>
+                        <div id="topic-content" class="topic-content">
+                            <p>Content will be loaded here...</p>
+                        </div>
+                    </div>
+                </main>
             </div>
         </div>
 
@@ -68,6 +81,10 @@
             </div>
 
             <div class="quiz-card" id="quiz-card" style="display: none;">
+                <div class="quiz-top-controls">
+                    <button id="stop-quiz-btn" class="quiz-btn stop-btn" style="display: none;">⏹️ Stop Quiz</button>
+                </div>
+                
                 <div id="quiz-question" class="quiz-question">
                     <p>Click "Start Quiz" to begin!</p>
                 </div>
@@ -86,6 +103,10 @@
 
             <div class="quiz-settings">
                 <h3>⚙️ Quiz Settings</h3>
+                <div class="quiz-type-selector">
+                    <button class="quiz-type-btn active" data-quiz-type="oops">OOP Quiz</button>
+                    <button class="quiz-type-btn" data-quiz-type="linux">Linux Quiz</button>
+                </div>
                 <label>
                     <input type="checkbox" id="randomize-questions" checked>
                     Randomize Questions
