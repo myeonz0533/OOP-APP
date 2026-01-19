@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OOPs Review App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 OOPs Review App</h1>
+            <p class="subtitle">Master Object-Oriented Programming Concepts</p>
+        </header>
+
+        <nav class="mode-selector">
+            <button class="mode-btn active" data-mode="read">📖 Reading Mode</button>
+            <button class="mode-btn" data-mode="quiz">🎮 Quiz Mode</button>
+        </nav>
+
+        <!-- Reading Mode -->
+        <div id="reading-mode" class="mode-content active">
+            <div class="content-controls">
+                <button class="nav-btn" id="prev-topic">← Previous</button>
+                <span class="topic-counter">
+                    <span id="current-topic-num">1</span> / <span id="total-topics">0</span>
+                </span>
+                <button class="nav-btn" id="next-topic">Next →</button>
+            </div>
+            
+            <div class="topic-card">
+                <h2 id="topic-title">Loading...</h2>
+                <div id="topic-content" class="topic-content">
+                    <p>Content will be loaded here...</p>
+                </div>
+            </div>
+
+            <div class="topic-list-container">
+                <h3>📚 Topics</h3>
+                <div id="topic-list" class="topic-list"></div>
+            </div>
+        </div>
+
+        <!-- Quiz Mode -->
+        <div id="quiz-mode" class="mode-content">
+            <div class="quiz-header">
+                <div class="quiz-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Score:</span>
+                        <span id="quiz-score">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Question:</span>
+                        <span id="question-number">1</span> / <span id="total-questions">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Correct:</span>
+                        <span id="correct-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quiz-card">
+                <div id="quiz-question" class="quiz-question">
+                    <p>Loading question...</p>
+                </div>
+                
+                <div id="quiz-options" class="quiz-options">
+                    <!-- Options will be dynamically generated -->
+                </div>
+
+                <div id="quiz-feedback" class="quiz-feedback"></div>
+
+                <div class="quiz-controls">
+                    <button id="next-question-btn" class="quiz-btn" style="display: none;">Next Question →</button>
+                    <button id="restart-quiz-btn" class="quiz-btn" style="display: none;">🔄 Restart Quiz</button>
+                </div>
+            </div>
+
+            <div class="quiz-settings">
+                <h3>⚙️ Quiz Settings</h3>
+                <label>
+                    <input type="checkbox" id="randomize-questions" checked>
+                    Randomize Questions
+                </label>
+                <label>
+                    <input type="checkbox" id="show-explanations" checked>
+                    Show Explanations
+                </label>
+                <button id="start-quiz-btn" class="quiz-btn primary">Start Quiz</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
