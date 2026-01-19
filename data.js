@@ -505,6 +505,160 @@ const oopsData = {
             ],
             correctAnswer: 1,
             explanation: "The private access specifier is used to provide the highest security level. Assigning private access means no other classes can access the field's values except the methods of the same class."
+        },
+        {
+            question: "Which programming languages support OOP according to the handout?",
+            options: [
+                "Java, Python, VB.NET, C#",
+                "BASIC, C, C++, Pascal",
+                "Erlang, Scala, Haskel, Elm",
+                "JavaScript, TypeScript, Ruby"
+            ],
+            correctAnswer: 0,
+            explanation: "Java, Python, VB.NET, and C# support the Object-oriented Programming paradigm."
+        },
+        {
+            question: "In Procedural Programming, what corresponds to 'Variables' in OOP?",
+            options: [
+                "Objects",
+                "Classes",
+                "Methods",
+                "Instance Variables"
+            ],
+            correctAnswer: 0,
+            explanation: "In OOP naming conventions, Variables in Procedural Programming correspond to Objects in OOP."
+        },
+        {
+            question: "What is the principle used in creating private access called?",
+            options: [
+                "Data hiding",
+                "Information hiding",
+                "Encapsulation",
+                "Abstraction"
+            ],
+            correctAnswer: 1,
+            explanation: "The principle used in creating private access is referred to as information hiding, an important component of object-oriented programs."
+        },
+        {
+            question: "What is a data field that occurs once per object called?",
+            options: [
+                "Static",
+                "Non-static",
+                "Private",
+                "Public"
+            ],
+            correctAnswer: 1,
+            explanation: "A data field is static if it occurs once per class and non-static if it happens once per object."
+        },
+        {
+            question: "What is the main() method?",
+            options: [
+                "A method that retrieves values",
+                "A method that executes automatically when a program is run",
+                "A constructor method",
+                "A setter method"
+            ],
+            correctAnswer: 1,
+            explanation: "A familiar example is the main() method, which executes automatically when a program is run."
+        },
+        {
+            question: "What does the 'new' operator do?",
+            options: [
+                "Creates a new variable",
+                "Allocates computer memory for an object",
+                "Calls a method",
+                "Returns a value"
+            ],
+            correctAnswer: 1,
+            explanation: "The new operator is allocating an unused portion of computer memory for an object."
+        },
+        {
+            question: "What is a reference type?",
+            options: [
+                "A primitive type like int",
+                "A type that refers to a memory address where an object is held",
+                "A method type",
+                "A variable type"
+            ],
+            correctAnswer: 1,
+            explanation: "An object also becomes a reference to an object - the name for a memory address where the object is held."
+        },
+        {
+            question: "What is the fully qualified identifier?",
+            options: [
+                "Just the method name",
+                "The class name, a dot, and the method name",
+                "Just the class name",
+                "The method name and parameters"
+            ],
+            correctAnswer: 1,
+            explanation: "A complete name that includes the class is a fully qualified identifier. It includes the class name, a dot, and the method name."
+        },
+        {
+            question: "What is the order in which methods appear in a class?",
+            options: [
+                "The order matters for execution",
+                "The order does not matter on the order in which they are called",
+                "Methods must be in alphabetical order",
+                "Methods must be grouped by type"
+            ],
+            correctAnswer: 1,
+            explanation: "The order in which the methods appear in a class does not matter on the order in which they are called or executed."
+        },
+        {
+            question: "What is the main() method's parameter String[] args?",
+            options: [
+                "The return type",
+                "The access modifier",
+                "Data to be sent to the method",
+                "The method name"
+            ],
+            correctAnswer: 2,
+            explanation: "Parentheses contain data to be sent to the method. When a main() method is written in a class, the parentheses in its header surround String[] args."
+        },
+        {
+            question: "What is the class that provides properties to be inherited called?",
+            options: [
+                "Derived class, child class, or subclass",
+                "Base class, parent class, or superclass",
+                "Main class",
+                "Abstract class"
+            ],
+            correctAnswer: 1,
+            explanation: "The class that inherits the properties of the other class is called a base class, parent class, or superclass."
+        },
+        {
+            question: "What does 'morph' mean in Polymorphism?",
+            options: [
+                "Many",
+                "Forms",
+                "One",
+                "Same"
+            ],
+            correctAnswer: 1,
+            explanation: "Poly means many, while morph means forms. Polymorphism describes the feature that allows the same word or symbol to be interpreted correctly in different situations."
+        },
+        {
+            question: "In the example 'Just' + 'ice', what does the + operator do?",
+            options: [
+                "Performs addition",
+                "Acts as a String concatenation operator",
+                "Throws an error",
+                "Returns null"
+            ],
+            correctAnswer: 1,
+            explanation: "If used in a String such as 'Just' + 'ice', it combines the two (2) strings and acts as a String concatenation operator resulting in 'Justice'."
+        },
+        {
+            question: "What is the method body?",
+            options: [
+                "The method header",
+                "The statements that carry out the work of the method, found between curly braces",
+                "The method name",
+                "The return type"
+            ],
+            correctAnswer: 1,
+            explanation: "A method body contains the statements that carry out the work of the method. It is found between a pair of curly braces. The body of a method is called its implementation."
         }
     ]
 };

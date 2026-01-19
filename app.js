@@ -13,11 +13,49 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
+    // Check if data is loaded
+    if (typeof oopsData === 'undefined') {
+        console.error('oopsData is not defined. Make sure data.js is loaded before app.js');
+        return;
+    }
+    
+    setupThemeToggle();
     setupModeSwitching();
     setupReadingMode();
     setupQuizMode();
     loadTopic(0);
     updateTopicList();
+    resetQuizDisplay();
+}
+
+// Theme Toggle
+function setupThemeToggle() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    const html = document.documentElement;
+    
+    // Load saved theme preference
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    html.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme, themeIcon);
+    
+    // Toggle theme on button click
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme, themeIcon);
+    });
+}
+
+function updateThemeIcon(theme, iconElement) {
+    if (theme === 'dark') {
+        iconElement.textContent = '☀️';
+    } else {
+        iconElement.textContent = '🌙';
+    }
 }
 
 // Mode Switching
@@ -36,8 +74,32 @@ function setupModeSwitching() {
             // Update content
             modeContents.forEach(content => content.classList.remove('active'));
             document.getElementById(`${mode}-mode`).classList.add('active');
+            
+            // Initialize quiz mode if switching to it
+            if (mode === 'quiz' && !quizStarted) {
+                resetQuizDisplay();
+            }
         });
     });
+}
+
+function resetQuizDisplay() {
+    // Reset quiz display to initial state
+    const quizCard = document.getElementById('quiz-card');
+    const quizSettings = document.querySelector('.quiz-settings');
+    
+    if (quizCard) {
+        quizCard.style.display = 'none';
+    }
+    if (quizSettings) {
+        quizSettings.style.display = 'block';
+    }
+    
+    // Reset stats display
+    document.getElementById('quiz-score').textContent = '0';
+    document.getElementById('question-number').textContent = '1';
+    document.getElementById('total-questions').textContent = '0';
+    document.getElementById('correct-count').textContent = '0';
 }
 
 // Reading Mode Functions
@@ -125,14 +187,31 @@ function setupQuizMode() {
 }
 
 function startQuiz() {
+    // Check if questions are available
+    if (!oopsData || !oopsData.questions || oopsData.questions.length === 0) {
+        alert('No questions available. Please check the data file.');
+        return;
+    }
+    
     quizStarted = true;
     quizScore = 0;
     correctAnswers = 0;
     currentQuestionIndex = 0;
     selectedAnswer = null;
     
-    // Get all questions
-    quizQuestions = [...oopsData.questions];
+    // Get all questions - ensure no duplicates by using Set
+    const uniqueQuestions = [];
+    const seenQuestions = new Set();
+    
+    for (const question of oopsData.questions) {
+        const questionKey = question.question.toLowerCase().trim();
+        if (!seenQuestions.has(questionKey)) {
+            seenQuestions.add(questionKey);
+            uniqueQuestions.push(question);
+        }
+    }
+    
+    quizQuestions = [...uniqueQuestions];
     
     // Randomize if option is checked
     if (document.getElementById('randomize-questions').checked) {
@@ -141,28 +220,62 @@ function startQuiz() {
     
     // Hide settings, show quiz
     document.querySelector('.quiz-settings').style.display = 'none';
-    document.getElementById('quiz-card').style.display = 'block';
+    const quizCard = document.getElementById('quiz-card');
+    quizCard.style.display = 'block';
+    
+    // Make sure quiz card has the right structure
+    if (!document.getElementById('quiz-question')) {
+        quizCard.innerHTML = `
+            <div id="quiz-question" class="quiz-question"></div>
+            <div id="quiz-options" class="quiz-options"></div>
+            <div id="quiz-feedback" class="quiz-feedback"></div>
+            <div class="quiz-controls">
+                <button id="next-question-btn" class="quiz-btn" style="display: none;">Next Question →</button>
+                <button id="restart-quiz-btn" class="quiz-btn" style="display: none;">🔄 Restart Quiz</button>
+            </div>
+        `;
+        // Re-attach event listeners
+        document.getElementById('next-question-btn').addEventListener('click', nextQuestion);
+        document.getElementById('restart-quiz-btn').addEventListener('click', restartQuiz);
+    }
     
     loadQuestion();
 }
 
 function loadQuestion() {
+    if (!quizQuestions || quizQuestions.length === 0) {
+        console.error('No questions available');
+        return;
+    }
+    
     if (currentQuestionIndex >= quizQuestions.length) {
         showQuizResults();
         return;
     }
     
     const question = quizQuestions[currentQuestionIndex];
+    if (!question || !question.options) {
+        console.error('Invalid question data:', question);
+        return;
+    }
+    
     selectedAnswer = null;
     
-    document.getElementById('quiz-question').innerHTML = `<p>${question.question}</p>`;
+    const questionElement = document.getElementById('quiz-question');
+    const optionsContainer = document.getElementById('quiz-options');
+    
+    if (!questionElement || !optionsContainer) {
+        console.error('Quiz elements not found');
+        return;
+    }
+    
+    questionElement.innerHTML = `<p>${question.question}</p>`;
     document.getElementById('question-number').textContent = currentQuestionIndex + 1;
     document.getElementById('total-questions').textContent = quizQuestions.length;
     document.getElementById('quiz-score').textContent = quizScore;
     document.getElementById('correct-count').textContent = correctAnswers;
     
     // Clear previous options
-    const optionsContainer = document.getElementById('quiz-options');
     optionsContainer.innerHTML = '';
     
     // Create option buttons
@@ -175,9 +288,14 @@ function loadQuestion() {
     });
     
     // Hide feedback and next button
-    document.getElementById('quiz-feedback').classList.remove('show');
-    document.getElementById('next-question-btn').style.display = 'none';
-    document.getElementById('restart-quiz-btn').style.display = 'none';
+    const feedbackElement = document.getElementById('quiz-feedback');
+    if (feedbackElement) {
+        feedbackElement.classList.remove('show');
+    }
+    const nextBtn = document.getElementById('next-question-btn');
+    const restartBtn = document.getElementById('restart-quiz-btn');
+    if (nextBtn) nextBtn.style.display = 'none';
+    if (restartBtn) restartBtn.style.display = 'none';
 }
 
 function selectAnswer(index) {
@@ -247,19 +365,43 @@ function showQuizResults() {
 
 function restartQuiz() {
     quizStarted = false;
-    document.querySelector('.quiz-settings').style.display = 'block';
-    document.getElementById('quiz-card').innerHTML = `
-        <div id="quiz-question" class="quiz-question">
-            <p>Click "Start Quiz" to begin!</p>
-        </div>
-        <div id="quiz-options" class="quiz-options"></div>
-        <div id="quiz-feedback" class="quiz-feedback"></div>
-        <div class="quiz-controls">
-            <button id="next-question-btn" class="quiz-btn" style="display: none;">Next Question →</button>
-            <button id="restart-quiz-btn" class="quiz-btn" style="display: none;">🔄 Restart Quiz</button>
-        </div>
-    `;
-    setupQuizMode();
+    quizScore = 0;
+    correctAnswers = 0;
+    currentQuestionIndex = 0;
+    selectedAnswer = null;
+    quizQuestions = [];
+    
+    // Show settings, hide quiz card
+    const quizSettings = document.querySelector('.quiz-settings');
+    const quizCard = document.getElementById('quiz-card');
+    
+    if (quizSettings) {
+        quizSettings.style.display = 'block';
+    }
+    if (quizCard) {
+        quizCard.style.display = 'none';
+        // Reset quiz card content to initial state
+        quizCard.innerHTML = `
+            <div id="quiz-question" class="quiz-question">
+                <p>Click "Start Quiz" to begin!</p>
+            </div>
+            <div id="quiz-options" class="quiz-options"></div>
+            <div id="quiz-feedback" class="quiz-feedback"></div>
+            <div class="quiz-controls">
+                <button id="next-question-btn" class="quiz-btn" style="display: none;">Next Question →</button>
+                <button id="restart-quiz-btn" class="quiz-btn" style="display: none;">🔄 Restart Quiz</button>
+            </div>
+        `;
+        // Re-attach event listeners
+        document.getElementById('next-question-btn').addEventListener('click', nextQuestion);
+        document.getElementById('restart-quiz-btn').addEventListener('click', restartQuiz);
+    }
+    
+    // Reset stats
+    document.getElementById('quiz-score').textContent = '0';
+    document.getElementById('question-number').textContent = '1';
+    document.getElementById('total-questions').textContent = '0';
+    document.getElementById('correct-count').textContent = '0';
 }
 
 function shuffleArray(array) {

@@ -9,8 +9,15 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎓 OOPs Review App</h1>
-            <p class="subtitle">Master Object-Oriented Programming Concepts</p>
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>🎓 OOPs Review App</h1>
+                    <p class="subtitle">Master Object-Oriented Programming Concepts</p>
+                </div>
+                <button id="theme-toggle" class="theme-toggle" title="Toggle Dark/Light Mode">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
         </header>
 
         <nav class="mode-selector">
@@ -60,9 +67,9 @@
                 </div>
             </div>
 
-            <div class="quiz-card">
+            <div class="quiz-card" id="quiz-card" style="display: none;">
                 <div id="quiz-question" class="quiz-question">
-                    <p>Loading question...</p>
+                    <p>Click "Start Quiz" to begin!</p>
                 </div>
                 
                 <div id="quiz-options" class="quiz-options">
